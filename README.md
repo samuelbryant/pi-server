@@ -5,11 +5,11 @@ This documents describes the general outline of how I will store my data locally
 ## Drives
 There are FIVE drives that will be important here:
 
-  home = [Laptop] my laptops native storage in my home folder
-  sda1 = [Laptop] the 90 GB flash drive partition attached to my laptop
-  sda2 = [Laptop] the 30 GB encrypted partitoin on flash drive attached to laptop
-  rpi1 = [Server] the 250 GB SSD attached to my raspberry pi
-  rpi2 = [Server] the 2 TB hard drive attached to my raspberry pi
+1. home = [Laptop] my laptops native storage in my home folder
+2. sda1 = [Laptop] the 90 GB flash drive partition attached to my laptop
+3. sda2 = [Laptop] the 30 GB encrypted partitoin on flash drive attached to laptop
+4. rpi1 = [Server] the 250 GB SSD attached to my raspberry pi
+5. rpi2 = [Server] the 2 TB hard drive attached to my raspberry pi
 
 ## Data types
 I basically have three types of data.
