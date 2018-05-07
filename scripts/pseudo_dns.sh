@@ -25,8 +25,7 @@ pull_ext() {
 
 if [[ "$1" == "push" ]]; then
   # Get the local and external IP addresses.
-  dir="$(dirname $0)"
-  ip=$("$dir/get_ip.sh")
+  ip=$(ifconfig | grep 'inet 192' | sed -E 's/.*inet ([0-9\.]*) .*/\1/g')
   ext_ip=$(curl ipinfo.io/ip)
 
   # Publish them to UChicago's server.
