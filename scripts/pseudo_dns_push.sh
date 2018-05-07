@@ -5,6 +5,7 @@
 
 ## This version of the script can be run as a cron job.
 
+USERNAME="sambryant"
 UCHI_SERVER="linux.cs.uchicago.edu"
 EXT_IP_FILE="SJB_PI_IP"
 LOCAL_IP_FILE="SJB_PI_IP_LOCAL"
@@ -18,7 +19,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 # Publish them to UChicago's server.
-echo "$ip" | ssh -o "StrictHostKeyChecking no" "$UCHI_SERVER" 'cat > '"$LOCAL_IP_FILE"
-echo "$ext_ip" | ssh -o "StrictHostKeyChecking no" "$UCHI_SERVER" 'cat > '"$EXT_IP_FILE"
+echo "$ip" | ssh -o "StrictHostKeyChecking no" "${USERNAME}@${UCHI_SERVER}" 'cat > '"$LOCAL_IP_FILE"
+echo "$ext_ip" | ssh -o "StrictHostKeyChecking no" "${USERNAME}@${UCHI_SERVER}" 'cat > '"$EXT_IP_FILE"
 
 exit 0
