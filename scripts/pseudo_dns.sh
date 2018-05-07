@@ -28,6 +28,11 @@ if [[ "$1" == "push" ]]; then
   ip=$(ifconfig | grep 'inet 192' | sed -E 's/.*inet ([0-9\.]*) .*/\1/g')
   ext_ip=$(curl ipinfo.io/ip)
 
+  if [[ "$?" -ne "0" ]]; then
+    echo "Something went wrong with obtaining the ext ip via curl" > /dev/stderr
+    exit 1
+  fi
+
   # Publish them to UChicago's server.
   echo "$ip" | ssh -o "StrictHostKeyChecking no" "$UCHI_SERVER" 'cat > '"$LOCAL_IP_FILE"
   echo "$ext_ip" | ssh -o "StrictHostKeyChecking no" "$UCHI_SERVER" 'cat > '"$EXT_IP_FILE"
