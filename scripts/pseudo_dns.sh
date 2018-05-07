@@ -31,7 +31,7 @@ if [[ "$1" == "push" ]]; then
 
   # Publish them to UChicago's server.
   echo "echo \"$ip\" | ssh -o \"StrictHostKeyChecking no\" \"$UCHI_SERVER\" 'cat > '\"$LOCAL_IP_FILE\""
-  echo "$ext_ip" | ssh -o "StrictHostKeyChecking no" 'cat > '"$EXT_IP_FILE"
+  echo "echo \"$ext_ip\" | ssh -o \"StrictHostKeyChecking no\" 'cat > '\"$EXT_IP_FILE\""
 
   exit 0
 
