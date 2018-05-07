@@ -26,4 +26,4 @@ fi
 sudo cp "$src" "$dst"
 parent=$(dirname "$0")
 host=$(hostname)
-echo "[$host]: cp '$src' '$dst'" >> "$parent/install_list.txt"
+echo "[$host]: cp '$src' '$dst'" >> "$parent/../install_list.txt"
