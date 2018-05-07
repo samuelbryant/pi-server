@@ -9,18 +9,25 @@ LOADED = False
 CONFIG_FILE = '/home/sambryant/bin/github_projects/pi-server/conf_files/pi-server-client.conf'
 DEFAULT_SECTION = 'DEFAULT'
 
+DryRun = False
+
+def set_dryrun(dryrun):
+  global DryRun
+  DryRun = dryrun
 
 def load(no_reload=False):
   if no_reload and LOADED:
     return
   config = configobj.ConfigObj(CONFIG_FILE)[DEFAULT_SECTION]
-  global ServerHostname, ServerLocalname, ServerUser, ServerDataDrive, ServerBackupDrive, ServerLogger, RsyncDelete, RsyncVerbose, NotifyDesktop, NotifySyslog, NotifyServerLog, NotifyDesktopExpireTime
+  global ClientProjectDir, ServerHostname, ServerLocalname, ServerUser, ServerDataDrive, ServerBackupDrive, ServerLogScript, ServerProjectDir, RsyncDelete, RsyncVerbose, NotifyDesktop, NotifySyslog, NotifyServerLog, NotifyDesktopExpireTime
+  ClientProjectDir = config['ClientProjectDir']
   ServerHostname = config['ServerHostname']
   ServerLocalname = config['ServerLocalname']
   ServerUser = config['ServerUser']
   ServerDataDrive = config['ServerDataDrive']
+  ServerProjectDir = config['ServerProjectDir']
   ServerBackupDrive = config['ServerBackupDrive']
-  ServerLogger = config['ServerLogger']
+  ServerLogScript = config['ServerLogScript']
   RsyncDelete = config['RsyncDelete']
   RsyncVerbose = config['RsyncVerbose']
   NotifyDesktop = config['NotifyDesktop']
@@ -32,12 +39,14 @@ def load(no_reload=False):
 def write_defaults():
   config = configobj.ConfigObj()
   config[DEFAULT_SECTION] = {
+    'ClientProjectDir': '/home/sambryant/bin/github_projects/pi-server',
     'ServerHostname': 'sjb-pi-ext',
     'ServerLocalname': 'sjb-pi',
     'ServerUser': 'sambryant',
     'ServerDataDrive': '/drives/data',
     'ServerBackupDrive': '/drives/backup',
-    'ServerLogger': '/drives/data/pi-server/server_scripts/log_server.py',
+    'ServerProjectDir': '/drives/data/pi-server',
+    'ServerLogScript': 'src/server/log_server.py',
     'RsyncDelete': True,
     'RsyncVerbose': True,
     'NotifyDesktop': True,

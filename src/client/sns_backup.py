@@ -6,8 +6,6 @@ import src.config as settings
 import src.log
 from subprocess import call
 
-DRYRUN = True
-
 
 # TODO:
 # These are constants that are specific to each backup set. 
@@ -32,6 +30,7 @@ IGNORE_FILES = ['/.cache', '/.config/chromium']
 def main():
   # Load configuration file
   settings.load()
+  settings.set_dryrun(True)
 
   # Set up logger
   log = src.log.Log(JOBNAME, print_terminal=True, asynchronous=False)
@@ -42,7 +41,7 @@ def main():
     settings.ServerUser, settings.ServerHostname, DEST_DIR)
   rsync_cmd.append(SOURCE_DIR)
   rsync_cmd.append(target)
-  if DRYRUN:
+  if settings.DryRun:
     rsync_cmd.append('-n')
   if settings.RsyncDelete:
     rsync_cmd.append('--delete')
@@ -66,7 +65,7 @@ def main():
   # else.
 
   # Start backup
-  shortmsg = 'SNS backup started (dry run = %s)' % str(DRYRUN)
+  shortmsg = 'SNS backup started'
   longmsg = 'Copying data from %s to %s' % (SOURCE_DIR, target)
   log.notify_all(shortmsg, longmsg)
 
@@ -74,11 +73,11 @@ def main():
   code = call(rsync_cmd)
 
   if code == 0:
-    shortmsg = 'SNS backup finished successfully (dry run = %s)' % str(DRYRUN)
+    shortmsg = 'SNS backup finished successfully'
     longmsg = 'Successfully copied data from %s to %s' % (SOURCE_DIR, target)
     log.notify_all(shortmsg, longmsg)
   else:
-    shortmsg = 'SNS backup failed with code %d (dry run = %s)' % (code, str(DRYRUN))
+    shortmsg = 'SNS backup failed with code %d' % code
     longmsg = 'Failed to backup data from %s to %s\nFailed command: %s' % (
       SOURCE_DIR, target, ' '.join(rsync_cmd))
     notify_all(shortmsg, longmsg, iserror=True)

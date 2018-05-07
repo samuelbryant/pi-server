@@ -20,6 +20,8 @@ class Log(object):
   def notify_desktop(self, summary, body, persist=False, severe=False):
     if not settings.NotifyDesktop:
       return
+    if settings.DryRun:
+      summary = '[DRYRUN] '+summary
     # TODO: Find out what happens on call failure and if we can recover from it.
     stack = ['notify-send', summary, body]
     if not persist:
@@ -33,8 +35,10 @@ class Log(object):
   def notify_server(self, msg, iserror=False):
     if not settings.NotifyServerLog:
       return
+    if settings.DryRun:
+      msg = '[DRYRUN] '+msg
     stack = [
-      'ssh', settings.ServerHostname, settings.ServerLogger, 
+      'ssh', settings.ServerHostname, 'python3 %s/%s' % (settings.ServerProjectDir, settings.ServerLogScript), 
       '"'+self.jobname+'"', '"'+msg+'"']
     if iserror:
       stack.append('-s 2')
@@ -44,6 +48,8 @@ class Log(object):
   def notify_local(self, msg, iserror=False):
     if not settings.NotifySyslog:
       return
+    if settings.DryRun:
+      msg = '[DRYRUN] '+msg
     syslog.openlog(self.jobname)
     syslog.syslog(syslog.LOG_ERR if iserror else syslog.LOG_INFO, msg)
 
