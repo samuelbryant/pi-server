@@ -30,7 +30,7 @@ if [[ "$1" == "push" ]]; then
   ext_ip=$(curl ipinfo.io/ip)
 
   # Publish them to UChicago's server.
-  echo "$ip" | ssh -o "StrictHostKeyChecking no" "$UCHI_SERVER" 'cat > '"$LOCAL_IP_FILE"
+  echo "echo \"$ip\" | ssh -o \"StrictHostKeyChecking no\" \"$UCHI_SERVER\" 'cat > '\"$LOCAL_IP_FILE\""
   echo "$ext_ip" | ssh -o "StrictHostKeyChecking no" 'cat > '"$EXT_IP_FILE"
 
   exit 0
