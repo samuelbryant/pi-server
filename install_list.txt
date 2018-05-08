@@ -1,1 +1,2 @@
-[sjb-pi]: cp 'scripts/pseudo_dns_push.sh' '/cron.hourly'
+[sjb-blade]: cp 'systemd_units/client/sns_backup.timer' '/usr/lib/systemd/user/sns_backup.timer'
+[sjb-blade]: cp 'systemd_units/client/sns_backup.service' '/usr/lib/systemd/user/sns_backup.service'

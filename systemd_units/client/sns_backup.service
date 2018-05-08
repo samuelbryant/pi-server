@@ -1,0 +1,5 @@
+[Unit]
+Description=SNSBackup
+
+[Service]
+ExecStart=/usr/bin/python3 /home/sambryant/bin/github_projects/pi-server/src/client/sns_backup.py
