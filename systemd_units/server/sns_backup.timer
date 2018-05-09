@@ -1,0 +1,11 @@
+[Unit]
+Description=Runs test every hour
+
+[Timer]
+OnBootSec=1min
+
+OnUnitActivateSec=1h
+Unit=sns_backup.service
+
+#[Install]
+#WantedBy=sns_backup.target
