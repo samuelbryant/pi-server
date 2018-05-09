@@ -6,3 +6,4 @@
 [sjb-pi]: cp 'systemd_units/server/sns_backup.service' '/usr/lib/systemd/system/sns_backup.service'
 [sjb-pi]: cp 'systemd_units/server/sns_backup.timer' '/usr/lib/systemd/system/sns_backup.timer'
 [sjb-pi]: cp 'scripts/test_cron.sh' '/etc/cron.hourly/test_cron.sh'
+[sjb-blade]: cp 'scripts/test_cron.sh' '/etc/cron.hourly/test_cron.sh'
