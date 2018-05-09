@@ -7,5 +7,5 @@ OnBootSec=1min
 OnUnitActivateSec=1h
 Unit=sns_backup.service
 
-[Install]
-WantedBy=sns_backup.target
+#[Install]
+#WantedBy=sns_backup.target

@@ -2,4 +2,5 @@
 Description=SNSBackup
 
 [Service]
-ExecStart=/usr/bin/python3 /home/sambryant/bin/github_projects/pi-server/src/client/sns_backup.py
+ExecStart=/bin/bash /home/sambryant/bin/github_projects/pi-server/systemd_units/client
+#ExecStart=/usr/bin/python3 /home/sambryant/bin/github_projects/pi-server/src/client/sns_backup.py
