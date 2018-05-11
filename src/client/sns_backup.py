@@ -30,7 +30,7 @@ IGNORE_FILES = ['/.cache', '/.config/chromium']
 def main():
   # Load configuration file
   settings.load()
-  settings.set_dryrun(True)
+  settings.set_dryrun(False)
 
   # Set up logger
   log = src.log.Log(JOBNAME, print_terminal=True, asynchronous=False)
@@ -80,7 +80,7 @@ def main():
     shortmsg = 'SNS backup failed with code %d' % code
     longmsg = 'Failed to backup data from %s to %s\nFailed command: %s' % (
       SOURCE_DIR, target, ' '.join(rsync_cmd))
-    notify_all(shortmsg, longmsg, iserror=True)
+    log.notify_all(shortmsg, longmsg, iserror=True)
   completed_flag = 1
 
 if __name__ == '__main__':
