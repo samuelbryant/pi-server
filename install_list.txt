@@ -4,3 +4,4 @@
 [sjb-pi]: cp 'scripts/test_cron.sh' '/etc/cron.hourly/test_cron.sh'
 [sjb-blade]: cp 'scripts/test_cron.sh' '/etc/cron.hourly/test_cron.sh'
 [sjb-blade]: cp 'cron_jobs/sns_backup.sh' '/etc/cron.daily/sns_backup.sh'
+[sjb-blade]: cp 'cron_jobs/lns_backup.sh' '/etc/cron.weekly/lns_backup.sh'
