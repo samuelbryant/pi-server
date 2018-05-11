@@ -1,6 +1,0 @@
-[Unit]
-Description=SNSBackup
-
-[Service]
-ExecStart=/bin/bash /drives/data/pi-server/systemd_units/server/sns_backup_test.sh
-#ExecStart=/usr/bin/python3 /home/sambryant/bin/github_projects/pi-server/src/client/sns_backup.py
