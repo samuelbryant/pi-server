@@ -1,3 +1,6 @@
+# Local .config folder for this app on my computer
+local_dot_config
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

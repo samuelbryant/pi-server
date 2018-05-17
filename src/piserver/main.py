@@ -1,6 +1,25 @@
-# This is the front-end for calling all python programs associated with this 
-# python server. Eventually, if the possible functions of this python library
-# become too disperse, it may make sense to fractionalize this.
+"""This is the top level module for my raspberry pi syncing program.
+
+It's definitely more complicated than it needs to be. In short, all it does is
+provide a way to run rsync jobs using config files. These would then ideally be
+scheduled via cron.
+
+I didn't just pure bash because I want it to be easily modular and configurable
+which is tough in bash.
+
+My design intention is not very clear here. I've probably straddled the worst
+of both worlds. I've written this application so that it can be configured and
+re-installed in other places. But it is also designed around my specific server
+client layout and is probably useless to anyone but me. Perhaps the 
+configurability and re-usability will be useful for me as I change my setup
+and get new computers. Regardless, writing the app in this way is a useful
+exercise in interacting with the rest of the development world.
+"""
+
+__author__ = 'Sam Bryant'
+__version__ = '0.1.1'
+
+
 import atexit
 import argparse
 import os
@@ -16,10 +35,15 @@ class BackupJob(object):
   """Class representing a single backup job."""
 
   def __init__(self):
-    parser = argparse.ArgumentParser(description='pi server backup script')
+    parser = argparse.ArgumentParser(
+      prog=PROGRAM,
+      description='program that backs up files to my pi server via rsync')
 
     # Only required argument is the name of the job file to read from.
     parser.add_argument('jobfile', type=str, help='Job configuration file name (the local name)')
+
+    parser.add_argument(
+      '-v', '--version', action='version', version='%(prog)s ' + __version__)
 
     parser.add_argument('--dryrun', dest='dryrun', action='store_const',
       const=True, default=False,
@@ -94,5 +118,4 @@ class BackupJob(object):
     self.completed = 1
 
 if __name__ == '__main__':
-  print('args: %s' % str(sys.argv))
   BackupJob()
