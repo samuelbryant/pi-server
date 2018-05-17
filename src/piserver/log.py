@@ -10,9 +10,17 @@ from subprocess import Popen
 def gen_log_msg(jobname, msg, iserror=False):
   timestamp = datetime.datetime.strftime(
     datetime.datetime.now(), '%y-%m-%d %H:%M:%S')
-  msg = '%s [%s] [%s]: %s\n' % (
+  msg = '%s [%s] [%s]: %s' % (
     timestamp, 'ERR' if iserror else 'MSG', jobname, msg)
   return msg
+
+def single_end_newline(msg):
+  """Returns a str consisting of msg with exactly one new line at the end.
+
+  i.e. If msg already has a trailing new line, this does nothing. Otherwise it 
+  returns msg plus a newline.
+  """
+  return msg if msg.endswith('\n') else (msg + '\n')
 
 class Log(object):
 
@@ -40,17 +48,18 @@ class Log(object):
     
     if self.notify_client_log:
       logf = open(self.config.client_log_file, 'a')
-      logf.write(msg)
+      logf.write(single_end_newline(msg))
       logf.close()
     if self.notify_server_log and self.job_config.run_from_client:
       stack = [
         'ssh',
         '%s@%s' % (self.config.server_user, self.config.server_hostname),
-        'echo "%s" >> "%s"' % (msg, self.config.server_log_file)]
+        'printf "%s" >> "%s"' % (
+          single_end_newline(msg), self.config.server_log_file)]
       Popen(stack)
     if self.notify_server_log and not self.job_config.run_from_client:
       logf = open(self.config.server_log_file, 'a')
-      logf.write(msg)
+      logf.write(single_end_newline(msg))
       logf.close()
     if self.notify_desktop:
       stack = ['notify-send', shortmsg, longmsg]
