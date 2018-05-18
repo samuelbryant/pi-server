@@ -8,12 +8,12 @@ APP_LIB_NAME="piserver"
 
 #DEFAULT_LIB_LOCATION="/usr/local/lib/python3.6/dist-packages"
 DEFAULT_LIB_LOCATION="$HOME/.local/lib/python3.6/site-packages"
-DEFAULT_FRONTEND_LOCATION="/usr/local/bin"
+DEFAULT_FRONTEND_LOCATION="/usr/local/bin/"
 #DEFAULT_CONFIG_LOCATION="/usr/local/etc"
 DEFAULT_CONFIG_LOCATION="$HOME/.config/"
 
 
-LOCAL_FRONTEND_LOCATION="./bin"
+LOCAL_FRONTEND_LOCATION="./bin/pi-server-backup"
 LOCAL_LIB_LOCATION="./src"
 LOCAL_CONFIG_LOCATION="./config"
 
@@ -59,6 +59,6 @@ set -e
 mkdir -p "$target_config_name"
 cp -rf "$LOCAL_LIB_LOCATION/$APP_LIB_NAME" "$target_pylib_name"
 cp -rf "$LOCAL_CONFIG_LOCATION/*" "$target_config_name/"
-sudo cp -rf "$LOCAL_FRONTEND_LOCATION/*" "$DEFAULT_FRONTEND_LOCATION/"
+sudo cp "$LOCAL_FRONTEND_LOCATION" "$DEFAULT_FRONTEND_LOCATION/"
 
 echo "Installation was a success!"

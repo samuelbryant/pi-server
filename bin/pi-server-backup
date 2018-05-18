@@ -5,7 +5,7 @@ import piserver.main
 if __name__ == '__main__':
   # Set name of script:
   sys.argv[0] = 'pi-server-backup'
-  piserver.main.main()
+  piserver.main.BackupJob()
 
 else:
   print('Error: this file should never be imported')
