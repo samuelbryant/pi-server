@@ -21,8 +21,8 @@ import argparse
 import os
 import sys
 import subprocess
+import piserver.desktop_notify
 import piserver.config
-import piserver.log
 import piserver.misc
 import piserver.fileio
 import piserver.constants
@@ -83,8 +83,9 @@ class BackupJob(object):
     if self.completed:
       return
 
+    piserver.desktop_notify.notify_failure(self.jobid, self.job_config, '?')
     piserver.jobrecords.record_failure(self.jobid, self.job_config)
-    piserver.jobrecords.record_entry('program failed and catch by _failure_catch')
+    piserver.jobrecords.record_entry('failure was caught by _failure_catch')
     # shortmsg = 'piserver backup encountered unknown failure'
     # longmsg = 'script terminated prematurely while copying %s to %s' % (self.src, self.dst)
     # self.log.log(shortmsg, longmsg, iserror=True)
@@ -106,6 +107,7 @@ class BackupJob(object):
     # start record
     piserver.jobrecords.record_started(self.jobid, self.job_config)
     piserver.jobrecords.record_call_stack(self.jobid, rsync_cmd)
+    piserver.desktop_notify.notify_start(self.jobid, self.job_config)
 
     # # start message
     # shortmsg = 'piserver backup starting'
@@ -116,11 +118,13 @@ class BackupJob(object):
 
     if code == 0:
       piserver.jobrecords.record_success(self.jobid, self.job_config)
+      piserver.desktop_notify.notify_success(self.jobid, self.job_config)
       # shortmsg = 'piserver backup finished successfully'
       # longmsg = 'copied data from %s to %s' % (self.src, self.dst)
       # self.log.log(shortmsg, longmsg)
     else:
       piserver.jobrecords.record_failure(self.jobid, self.job_config)
+      piserver.desktop_notify.notify_failure(self.jobid, self.job_config, code)
       piserver.jobrecords.record_entry(
         self.jobid, 'subprocess failed with code %d' % code)
       # shortmsg = 'piserver backup failed with code %d' % code
