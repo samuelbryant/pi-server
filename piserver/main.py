@@ -83,7 +83,7 @@ class BackupJob(object):
     if self.completed:
       return
 
-    piserver.jobrecords.record_failure(self.jobid)
+    piserver.jobrecords.record_failure(self.jobid, self.job_config)
     piserver.jobrecords.record_entry('program failed and catch by _failure_catch')
     # shortmsg = 'piserver backup encountered unknown failure'
     # longmsg = 'script terminated prematurely while copying %s to %s' % (self.src, self.dst)
@@ -104,7 +104,7 @@ class BackupJob(object):
     rsync_cmd.append(self.dst)
 
     # start record
-    piserver.jobrecords.record_started(self.jobid)
+    piserver.jobrecords.record_started(self.jobid, self.job_config)
     piserver.jobrecords.record_call_stack(self.jobid, rsync_cmd)
 
     # # start message
@@ -115,12 +115,12 @@ class BackupJob(object):
     code = subprocess.call(rsync_cmd)
 
     if code == 0:
-      piserver.jobrecords.record_success(self.jobid)
+      piserver.jobrecords.record_success(self.jobid, self.job_config)
       # shortmsg = 'piserver backup finished successfully'
       # longmsg = 'copied data from %s to %s' % (self.src, self.dst)
       # self.log.log(shortmsg, longmsg)
     else:
-      piserver.jobrecords.record_failure(self.jobid)
+      piserver.jobrecords.record_failure(self.jobid, self.job_config)
       piserver.jobrecords.record_entry(
         self.jobid, 'subprocess failed with code %d' % code)
       # shortmsg = 'piserver backup failed with code %d' % code

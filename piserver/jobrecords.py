@@ -13,8 +13,11 @@ STATUS_VALUES = [
   STATUS_NOT_STARTED, STATUS_IN_PROGRESS, STATUS_FAILED, STATUS_SUCCESS
 ]
 
-def get_master_file():
-  return os.path.join(piserver.fileio.get_app_job_records_dir(), 'master.txt')
+def get_master_log_file():
+  return os.path.join(piserver.fileio.get_app_job_records_dir(), 'master.log')
+
+def get_master_id_file():
+  return os.path.join(piserver.fileio.get_app_job_records_dir(), 'last_id.txt')
 
 def get_job_record_dir(jobid):
   return os.path.join(piserver.fileio.get_app_job_records_dir(), str(jobid))
@@ -33,14 +36,14 @@ def get_job_config_file(jobid):
 
 def _write_last_id_if_greater(last):
   """Writes the "last job id" to the master record file if its greater than the current "last job id" stored in the master record file."""
-  fname = get_master_file()
+  fname = get_master_id_file()
   old = _get_last_id()
-  f = open(get_master_file(), 'w')
+  f = open(get_master_id_file(), 'w')
   f.write(str(last)+'\n')
   f.close()
 
 def _get_last_id():
-  fname = get_master_file()
+  fname = get_master_id_file()
   if not os.path.exists(fname):
     return 0
   f = open(fname, 'r')
@@ -67,15 +70,6 @@ def _get_next_id():
   _write_last_id_if_greater(next)
   return next
 
-def _write_job_info(jobid, jobconfig, timestamp):
-  f = open(get_job_info_file(jobid), 'w')
-  f.write(str(jobid)+'\n')
-  f.write(jobconfig.job_name+'\n')
-  f.write('%s: %s\n' % (jobconfig.source, jobconfig.source_dir))
-  f.write('%s: %s\n' % (jobconfig.target, jobconfig.target_dir))
-  f.write(timestamp+'\n')
-  f.close()
-
 def _get_timestamp():
   return datetime.datetime.strftime(
     datetime.datetime.now(), '%y-%m-%d %H:%M:%S')
@@ -93,29 +87,65 @@ def _write_status_file(jobid, status, timestamp):
   f.write('%d %s\n' % (status, timestamp))
   f.close()
 
+def _write_master_log_entry(jobid, jobconfig, timestamp, msg):
+  msg = '[%s] job %3d [%s]: %s\n' % (timestamp, jobid, jobconfig.job_name, msg)
+  f = open(get_master_log_file(), 'a')
+  f.write(msg)
+  f.close()
+
+def _write_job_info_to_file(file, jobid, jobconfig, timestamp):
+  file.write('\tID: %d\n\tJob Name: %s\n\tDryrun: %s\n\tSource: %s: %s\n\tTarget: %s: %s\n\tTime: %s\n' % (
+      jobid, jobconfig.job_name, str(jobconfig.is_dry_run()),
+      jobconfig.source, jobconfig.source_dir,
+      jobconfig.target, jobconfig.target_dir,
+      timestamp))
+
+def _write_job_info_file(jobid, jobconfig, timestamp):
+  f = open(get_job_info_file(jobid), 'w')
+  _write_job_info_to_file(f, jobid, jobconfig, timestamp)
+  f.close()
+
+def _write_initial_master_log_entry(jobid, jobconfig, timestamp):
+  f = open(get_master_log_file(), 'a')
+  f.write('[%s] ******* NEW JOB ID: %d ************\n' % (timestamp, jobid))
+  _write_job_info_to_file(f, jobid, jobconfig, timestamp)
+  f.close()
+
 def create_new_record(jobconfig):
   """Creates new unique directory to hold information about a job.
   This will return the unique "id" for this job.
   """
   jobid = _get_next_id()
   timestamp = _get_timestamp()
-  _write_job_info(jobid, jobconfig, timestamp)
-  _write_status_file(jobid, STATUS_NOT_STARTED, timestamp)
-  record_entry(jobid, 'initialized')
+  _write_job_info_file(jobid, jobconfig, timestamp)
+  _write_initial_master_log_entry(jobid, jobconfig, timestamp)
+  record_initialized(jobid, jobconfig)
   # copy job config to record dir
   jobconfig.write(fname=get_job_config_file(jobid))
   return jobid
 
-def record_started(jobid):
-  _write_status_file(jobid, STATUS_IN_PROGRESS, _get_timestamp())
+def record_initialized(jobid, jobconfig):
+  ts = _get_timestamp()
+  _write_status_file(jobid, STATUS_NOT_STARTED, ts)
+  _write_master_log_entry(jobid, jobconfig, ts, 'initialized')
+  record_entry(jobid, 'initialized')
+
+def record_started(jobid, jobconfig):
+  ts = _get_timestamp()
+  _write_status_file(jobid, STATUS_IN_PROGRESS, ts)
+  _write_master_log_entry(jobid, jobconfig, ts, 'started')
   record_entry(jobid, 'started')
 
-def record_success(jobid):
-  _write_status_file(jobid, STATUS_SUCCESS, _get_timestamp())
+def record_success(jobid, jobconfig):
+  ts = _get_timestamp()
+  _write_status_file(jobid, STATUS_SUCCESS, ts)
+  _write_master_log_entry(jobid, jobconfig, ts, 'succeeded')
   record_entry(jobid, 'succeeded')
 
-def record_failure(jobid):
-  _write_status_file(jobid, STATUS_FAILURE, _get_timestamp())
+def record_failure(jobid, jobconfig):
+  ts = _get_timestamp()
+  _write_status_file(jobid, STATUS_FAILURE, ts)
+  _write_master_log_entry(jobid, jobconfig, ts, 'failed')
   record_entry(jobid, 'failed')
 
 def record_call_stack(jobid, stack):
