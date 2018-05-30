@@ -1,11 +1,10 @@
 import syslog
 import datetime
+import piserver.fileio
 from subprocess import call
 from subprocess import Popen
 
 # TODO: Do logging the "correct" way.
-
-
 
 def gen_log_msg(jobname, msg, iserror=False):
   timestamp = datetime.datetime.strftime(
@@ -17,23 +16,22 @@ def gen_log_msg(jobname, msg, iserror=False):
 def single_end_newline(msg):
   """Returns a str consisting of msg with exactly one new line at the end.
 
-  i.e. If msg already has a trailing new line, this does nothing. Otherwise it 
+  i.e. If msg already has a trailing new line, this does nothing. Otherwise it
   returns msg plus a newline.
   """
   return msg if msg.endswith('\n') else (msg + '\n')
 
 class Log(object):
 
-  def __init__(self, config, job_config):
-    self.config = config
+  def __init__(self, job_config):
     self.job_config = job_config
-    
-    client_logging = job_config.run_from_client
 
-    self.notify_desktop = client_logging and config.notify_desktop
-    self.notify_syslog = client_logging and config.notify_syslog
-    self.notify_client_log = client_logging and config.notify_client_log
-    self.notify_server_log = config.notify_server_log
+    client_logging = job_config.is_run_from_client()
+
+    self.notify_desktop = client_logging and job_config.notify_desktop
+    self.notify_syslog = client_logging and job_config.notify_syslog
+    self.notify_client_log = client_logging and job_config.notify_client_log
+    self.notify_server_log = job_config.notify_server_log
 
     self.jobname = job_config.job_name
     self.print_terminal = True
@@ -45,20 +43,20 @@ class Log(object):
 
     msg = gen_log_msg(
       self.jobname, '%s: %s' % (shortmsg, longmsg), iserror=iserror)
-    
+
     if self.notify_client_log:
-      logf = open(self.config.client_log_file, 'a')
+      logf = open(piserver.fileio.get_app_local_log_file(), 'a')
       logf.write(single_end_newline(msg))
       logf.close()
-    if self.notify_server_log and self.job_config.run_from_client:
+    if self.notify_server_log and self.job_config.is_run_from_client():
       stack = [
         'ssh',
-        '%s@%s' % (self.config.server_user, self.config.server_hostname),
+        '%s@%s' % (self.job_config.server_user, self.job_config.server_hostname),
         'printf "%s" >> "%s"' % (
-          single_end_newline(msg), self.config.server_log_file)]
+          single_end_newline(msg), piserver.fileio.get_app_remote_log_file())]
       Popen(stack)
-    if self.notify_server_log and not self.job_config.run_from_client:
-      logf = open(self.config.server_log_file, 'a')
+    if self.notify_server_log and not self.job_config.is_run_from_client():
+      logf = open(piserver.fileio.get_app_remote_log_file(), 'a')
       logf.write(single_end_newline(msg))
       logf.close()
     if self.notify_desktop:
@@ -68,7 +66,7 @@ class Log(object):
         stack.append('critical')
       else:
         stack.append('-t')
-        stack.append(self.config.notify_desktop_expire_time)
+        stack.append(str(self.job_config.notify_desktop_expire_time))
       Popen(stack) # asynchronous call
 
   # def notify_client_log(self, msg, iserror=False):
@@ -96,7 +94,7 @@ class Log(object):
   #   if settings.DryRun:
   #     msg = '[DRYRUN] '+msg
   #   stack = [
-  #     'ssh', settings.ServerHostname, 'python3 %s/%s' % (settings.ServerProjectDir, settings.ServerLogScript), 
+  #     'ssh', settings.ServerHostname, 'python3 %s/%s' % (settings.ServerProjectDir, settings.ServerLogScript),
   #     '"'+self.jobname+'"', '"'+msg+'"']
   #   if iserror:
   #     stack.append('-s 2')

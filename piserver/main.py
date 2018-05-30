@@ -10,64 +10,63 @@ which is tough in bash.
 My design intention is not very clear here. I've probably straddled the worst
 of both worlds. I've written this application so that it can be configured and
 re-installed in other places. But it is also designed around my specific server
-client layout and is probably useless to anyone but me. Perhaps the 
+client layout and is probably useless to anyone but me. Perhaps the
 configurability and re-usability will be useful for me as I change my setup
 and get new computers. Regardless, writing the app in this way is a useful
 exercise in interacting with the rest of the development world.
 """
 
-__author__ = 'Sam Bryant'
-__version__ = '0.1.1'
-
-
 import atexit
 import argparse
 import os
 import sys
+import subprocess
 import piserver.config
-import piserver.jobconfig
 import piserver.log
-from subprocess import call
+import piserver.misc
+import piserver.fileio
+import piserver.constants
 
-PROGRAM = 'pi-server-backup'
+
+def main():
+  BackupJob()
+
+def listjobs():
+  jobs = piserver.fileio.get_user_job_config_files_list()
+  print('Available backup jobs:')
+  print('\t'+'\n\t'.join(jobs))
 
 class BackupJob(object):
   """Class representing a single backup job."""
 
   def __init__(self):
     parser = argparse.ArgumentParser(
-      prog=PROGRAM,
-      description='program that backs up files to my pi server via rsync')
+      prog=piserver.constants.PROGRAM,
+      description=piserver.constants.DESCRIPTION)
 
     # Only required argument is the name of the job file to read from.
-    parser.add_argument('jobfile', type=str, help='Job configuration file name (the local name)')
+    parser.add_argument('jobname', type=str, help='Job configuration file name (the local name)')
 
     parser.add_argument(
-      '-v', '--version', action='version', version='%(prog)s ' + __version__)
+      '-v', '--version', action='version',
+      version='%(prog)s ' + piserver.constants.__version__)
 
     parser.add_argument('--dryrun', dest='dryrun', action='store_const',
-      const=True, default=False,
+      const=True, default=True,
       help='Sets the dry run flag to true (no data is actually copied)')
-
-    parser.add_argument('--configfile', type=str,
-      default=None,
-      help='The full path name of the config file to use. By default will use the one stored in the directory chosen during install.')
 
     args = parser.parse_args(sys.argv[1:])
 
     # read application and job config files
-    self.config = piserver.config.Config(config_file=args.configfile)
-    self.job_config = piserver.jobconfig.JobConfig(
-      self.config,
-      piserver.fileio.get_job_config_file(self.config, args.jobfile),
-      args.dryrun)
+    self.job_config = piserver.config.JobConfig(
+      args.jobname, dryrun=args.dryrun)
 
     # compute the src and dst
     self.src = self.job_config.gen_rsync_source()
-    self.dst = self.job_config.gen_rsync_dest()
+    self.dst = self.job_config.gen_rsync_target()
 
     # setup logger
-    self.log = piserver.log.Log(self.config, self.job_config)
+    self.log = piserver.log.Log(self.job_config)
 
     self.completed = False
 
@@ -80,7 +79,7 @@ class BackupJob(object):
     """Function used to cleanup in case of an unexpected error."""
     if self.completed:
       return
-    
+
     shortmsg = 'piserver backup encountered unknown failure'
     longmsg = 'script terminated prematurely while copying %s to %s' % (self.src, self.dst)
     self.log.log(shortmsg, longmsg, iserror=True)
@@ -88,11 +87,11 @@ class BackupJob(object):
   def _run_backup(self):
     # first we build the command.
     rsync_cmd = ['rsync', '-a']
-    if self.job_config.dryrun:
+    if self.job_config.is_dry_run():
       rsync_cmd.append('-n')
-    if self.job_config.use_delete:
+    if self.job_config.rsync_delete:
       rsync_cmd.append('--delete')
-    if self.job_config.use_verbose:
+    if self.job_config.rsync_verbose:
       rsync_cmd.append('-v')
     for ignore in self.job_config.ignore_files:
       rsync_cmd.append('--exclude='+ignore)
@@ -104,8 +103,8 @@ class BackupJob(object):
     longmsg = 'copying data from %s to %s' % (self.src, self.dst)
     self.log.log(shortmsg, longmsg)
 
-    print('COMMAND: "%s"' % ' '.join(rsync_cmd))
-    code = call(rsync_cmd)
+    print('CALL: '+' '.join(rsync_cmd))
+    code = subprocess.call(rsync_cmd)
 
     if code == 0:
       shortmsg = 'piserver backup finished successfully'
@@ -118,4 +117,4 @@ class BackupJob(object):
     self.completed = 1
 
 if __name__ == '__main__':
-  BackupJob()
+  main()
