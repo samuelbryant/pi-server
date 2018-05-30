@@ -51,6 +51,11 @@ def get_user_job_config_files_list(config_dir=None):
       match.append(f)
   return match
 
+# Job records stuff
+def get_app_job_records_dir(config_dir=None):
+  return os.path.join(config_dir or get_default_app_config_dir(), 'records')
+
+
 # def get_default_app_config_file():
 #   return os.path.join(os.environ['HOME'], '.config', 'piserver', 'app.conf')
 

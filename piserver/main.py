@@ -26,6 +26,7 @@ import piserver.log
 import piserver.misc
 import piserver.fileio
 import piserver.constants
+import piserver.jobrecords
 
 
 def main():
@@ -52,7 +53,7 @@ class BackupJob(object):
       version='%(prog)s ' + piserver.constants.__version__)
 
     parser.add_argument('--dryrun', dest='dryrun', action='store_const',
-      const=True, default=True,
+      const=True, default=False,
       help='Sets the dry run flag to true (no data is actually copied)')
 
     args = parser.parse_args(sys.argv[1:])
@@ -65,8 +66,10 @@ class BackupJob(object):
     self.src = self.job_config.gen_rsync_source()
     self.dst = self.job_config.gen_rsync_target()
 
-    # setup logger
-    self.log = piserver.log.Log(self.job_config)
+    # setup job records
+    self.jobid = piserver.jobrecords.create_new_record(self.job_config)
+    # # setup logger
+    # self.log = piserver.log.Log(self.job_config)
 
     self.completed = False
 
@@ -80,9 +83,11 @@ class BackupJob(object):
     if self.completed:
       return
 
-    shortmsg = 'piserver backup encountered unknown failure'
-    longmsg = 'script terminated prematurely while copying %s to %s' % (self.src, self.dst)
-    self.log.log(shortmsg, longmsg, iserror=True)
+    piserver.jobrecords.record_failure(self.jobid)
+    piserver.jobrecords.record_entry('program failed and catch by _failure_catch')
+    # shortmsg = 'piserver backup encountered unknown failure'
+    # longmsg = 'script terminated prematurely while copying %s to %s' % (self.src, self.dst)
+    # self.log.log(shortmsg, longmsg, iserror=True)
 
   def _run_backup(self):
     # first we build the command.
@@ -98,22 +103,29 @@ class BackupJob(object):
     rsync_cmd.append(self.src)
     rsync_cmd.append(self.dst)
 
-    # start message
-    shortmsg = 'piserver backup starting'
-    longmsg = 'copying data from %s to %s' % (self.src, self.dst)
-    self.log.log(shortmsg, longmsg)
+    # start record
+    piserver.jobrecords.record_started(self.jobid)
+    piserver.jobrecords.record_call_stack(self.jobid, rsync_cmd)
 
-    print('CALL: '+' '.join(rsync_cmd))
+    # # start message
+    # shortmsg = 'piserver backup starting'
+    # longmsg = 'copying data from %s to %s' % (self.src, self.dst)
+    # self.log.log(shortmsg, longmsg)
+    # print('CALL: '+' '.join(rsync_cmd))
     code = subprocess.call(rsync_cmd)
 
     if code == 0:
-      shortmsg = 'piserver backup finished successfully'
-      longmsg = 'copied data from %s to %s' % (self.src, self.dst)
-      self.log.log(shortmsg, longmsg)
+      piserver.jobrecords.record_success(self.jobid)
+      # shortmsg = 'piserver backup finished successfully'
+      # longmsg = 'copied data from %s to %s' % (self.src, self.dst)
+      # self.log.log(shortmsg, longmsg)
     else:
-      shortmsg = 'piserver backup failed with code %d' % code
-      longmsg = 'failed to copy data from %s to %s' % (self.src, self.dst)
-      self.log.log(shortmsg, longmsg, iserror=True)
+      piserver.jobrecords.record_failure(self.jobid)
+      piserver.jobrecords.record_entry(
+        self.jobid, 'subprocess failed with code %d' % code)
+      # shortmsg = 'piserver backup failed with code %d' % code
+      # longmsg = 'failed to copy data from %s to %s' % (self.src, self.dst)
+      # self.log.log(shortmsg, longmsg, iserror=True)
     self.completed = 1
 
 if __name__ == '__main__':

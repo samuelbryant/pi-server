@@ -1,3 +1,1 @@
 [sjb-pi]: cp 'scripts/pseudo_dns_push.sh' '/etc/cron.hourly/pseudo_dns_push.sh'
-[sjb-blade]: cp 'cron_jobs/sns_backup.sh' '/etc/cron.daily/sns_backup.sh'
-[sjb-blade]: cp 'cron_jobs/lns_backup.sh' '/etc/cron.weekly/lns_backup.sh'

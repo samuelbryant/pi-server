@@ -62,8 +62,8 @@ class Config(object):
     for name, default in _CONFIG_PROPERTIES:
       print('\t%-20s: %s' % (name, str(getattr(self, name))))
 
-  def write(self):
-    fname = piserver.fileio.get_app_config_file()
+  def write(self, fname=None):
+    fname = fname or piserver.fileio.get_app_config_file()
 
     # create parent directory as needed
     if not os.path.isdir(os.path.dirname(fname)):
@@ -73,9 +73,8 @@ class Config(object):
     for name, default in _CONFIG_PROPERTIES:
       config_dict[name] = getattr(self, name, default)
 
-
     json_file = open(fname, 'w')
-    json_file.write(json.dumps(config_dict, indent=2))
+    json_file.write(json.dumps(config_dict, indent=2)+'\n')
     json_file.close()
 
 
@@ -136,8 +135,8 @@ class JobConfig(object):
     for name, default in _JOB_CONFIG_PROPERTIES:
       print('\t%-20s: %s' % (name, str(getattr(self, name))))
 
-  def write(self):
-    fname = piserver.fileio.get_app_job_file(self.job_config_name)
+  def write(self, fname=None):
+    fname = fname or piserver.fileio.get_app_job_file(self.job_config_name)
 
     # create parent directory as needed
     if not os.path.isdir(os.path.dirname(fname)):
@@ -151,9 +150,8 @@ class JobConfig(object):
     for name in self._overriden_properties:
       config_dict[name] = getattr(self.config, name)
 
-
     json_file = open(fname, 'w')
-    json_file.write(json.dumps(config_dict, indent=2))
+    json_file.write(json.dumps(config_dict, indent=2)+'\n')
     json_file.close()
 
   def gen_rsync_source(self):
